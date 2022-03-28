@@ -1,0 +1,44 @@
+{
+  "contactos": [
+    {
+      "name": "Jesus",
+      "photo": "https://www.miturnoenlinea.cl/images/malecostume.png",
+      "phone": "8442215557",
+      "email": "ernestomenchaca2003@gmail.com",
+      "company": "ClickIt",
+      "title": "DevOps Engineer",
+      "grupoId": "1",
+      "id": 1
+    },
+    {
+      "name": "Daniel Martinez",
+      "photo": "https://sinergia-plus.conanp.gob.mx/images/avatar.png",
+      "phone": "844000123",
+      "email": "dani@correo.com",
+      "company": "UTC",
+      "title": "Student",
+      "grupoId": "1",
+      "id": 2
+    },
+    {
+      "name": "Ale Gonzales",
+      "photo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQ4zSuR3smjiem4g6y4975pIVAtYDSO3v7jaXGlkCwyyhJNpir54CH3Vr2E324acFBubQ&usqp=CAU",
+      "phone": "84412345677",
+      "email": "ale@correo.com",
+      "company": "UTC",
+      "title": "Student",
+      "grupoId": "1",
+      "id": 3
+    }
+  ],
+  "grupos": [
+    {
+      "id": "1",
+      "name": "Partner"
+    },
+    {
+      "id": "2",
+      "name": "Co-Partner"
+    }
+  ]
+}

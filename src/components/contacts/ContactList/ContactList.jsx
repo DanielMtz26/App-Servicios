@@ -1,10 +1,81 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, {useEffect, useState} from "react";
+import { Link, useParams } from "react-router-dom";
+import { ContactService } from "../../../services/ContactService";
+import Spinner from "../../Spinner/Spinner";
+
 
 let ContactList = () => {
+
+  let [query, setQuery] = useState({
+    text: ''
+  });
+
+  let [state, setState] = useState({
+    loading: false,
+    contactos: [],
+    filtroContactos: [],
+    errorMessage: ''
+  });
+
+  useEffect( async () => {
+    try{
+      setState({...state, loading: true});
+      let response = await ContactService.getAllContacts();
+      setState({
+        ...state,
+        loading: false,
+        contactos: response.data,
+        filtroContactos: response.data
+    });
+    }
+    catch (error){
+      setState({
+        ...state,
+        loading: false,
+        errorMessage: error.message
+      });
+    }
+  }, []);
+
+  let clickDelete = async (contactoId) =>{
+    
+    try{
+      let response = await ContactService.deleteContact(contactoId);
+      if(response){
+        setState({...state, loading: true});
+        let response = await ContactService.getAllContacts();
+        setState({
+          ...state,
+          loading: false,
+          contactos: response.data,
+          filtroContactos: response.data
+        });
+      }
+    }catch(error){
+      setState({
+        ...state,
+        loading: false,
+        errorMessage: error.message
+      });
+    }
+  };
+
+  let searchContacts = (event) =>{
+    setQuery({...query, text: event.target.value});
+    let theContacts = state.contactos.filter(contacto => {
+      return contacto.name.toLowerCase().includes(event.target.value.toLowerCase());
+    });
+    setState({
+      ...state,
+      filtroContactos: theContacts
+    });
+  };  
+  let {loading, contactos, filtroContactos,errorMessage} = state;
+
   return (
     <React.Fragment>
       <section>
+        <pre>{query.text}</pre>
         <div className="contact-search p-3">
           <div className="container">
             <div className="grid">
@@ -29,6 +100,9 @@ let ContactList = () => {
                   <div className="col">
                     <div className="mb-2">
                       <input
+                        name= "text"
+                        value={query.text}
+                        onChange={searchContacts}
                         type="text"
                         className="form-control"
                         placeholder="Buscar contacto"
@@ -38,8 +112,8 @@ let ContactList = () => {
                   <div className="col">
                     <div className="mb-2">
                       <input
-                        type="sumbit"
-                        className="btn btn-outline-dark"
+                        type="submit"
+                        className="btn btn-info"
                         value="Buscar"
                       />
                     </div>
@@ -50,52 +124,65 @@ let ContactList = () => {
           </div>
         </div>
       </section>
-
-      <section className="contact-list">
+      {
+        loading ?  <Spinner/> : <React.Fragment>
+          <section className="contact-list">
         <div className="container">
           <div className="row">
-            <div className="col-md-6">
-              <div className="card">
-                <div className="card-body">
-                  <div className="row align-items-center d-flex justify-content-around">
-                    <div className="col-md-4">
-                      <img
-                        src="http://assets.stickpng.com/images/585e4bcdcb11b227491c3396.png"
-                        alt=""
-                        className="img-fluid contact-img"
-                      />
-                    </div>
-                    <div className="col-md-7">
-                      <ul className="list-group">
-                        <li className="list-group-item list-group-item-action">
-                          Nombre: <span className="fw-bold"> Ernesto Menchaca </span>
-                        </li>
-                        <li className="list-group-item list-group-item-action">
-                          Teléfono: <span className="fw-bold"> +52 123 456 7890 </span>
-                        </li>
-                        <li className="list-group-item list-group-item-action">
-                          Correo electrónico: <span className="fw-bold"> correo@correo.com </span>
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="col-md-1 d-flex flex-column align-items-center">
-                        <Link to={'/contacts/view/:contactId'} className="btn btn-warning my-1">
-                        <i className="fa fa-eye"></i>                        
-                        </Link>
-                        <Link to={'/contacts/edit/:contactId'} className="btn btn-primary my-1">
-                        <i className="fa fa-pen"></i>                        
-                        </Link>
-                        <button className="btn btn-danger my-1">
-                            <i className="fa fa-trash"></i>
-                        </button>
+            {
+              filtroContactos.length > 0 && 
+                filtroContactos.map(contacto => {
+                  return(
+                    <div className="col-md-6" key={contacto.id}>
+                    <div className="card my-2">
+                      <div className="card-body">
+                        <div className="row align-items-center d-flex justify-content-around">
+                          <div className="col-md-4">
+                            <img
+                              src={contacto.photo}
+                              alt=""
+                              className="img-fluid contact-img"
+                            />
+                          </div>
+                          <div className="col-md-7">
+                            <ul className="list-group">
+                              <li className="list-group-item list-group-item-action">
+                                Nombre: <span className="fw-bold">{contacto.name}</span>
+                              </li>
+                              <li className="list-group-item list-group-item-action">
+                                Teléfono: <span className="fw-bold">{contacto.phone}</span>
+                              </li>
+                              <li className="list-group-item list-group-item-action">
+                                Correo electrónico: <span className="fw-bold">{contacto.email}</span>
+                              </li>
+                            </ul>
+                          </div>
+                          <div className="col-md-1 d-flex flex-column align-items-center">
+                              <Link to={`/contacts/view/${contacto.id}`} className="btn btn-warning my-1">
+                              <i className="fa fa-eye"></i>                        
+                              </Link>
+                              <Link to={`/contacts/edit/${contacto.id}`} className="btn btn-primary my-1">
+                              <i className="fa fa-pen"></i>                        
+                              </Link>
+                              <button className="btn btn-danger my-1" onClick={() => clickDelete(contacto.id)}>
+                                  <i className="fa fa-trash"></i>
+                              </button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
+                  )
+                })
+            }
+   
           </div>
         </div>
       </section>
+          </React.Fragment>
+      }
+
+      
     </React.Fragment>
   );
 };
